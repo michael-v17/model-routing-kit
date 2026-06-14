@@ -1,0 +1,6 @@
+{
+  "name": "model-routing-kit",
+  "description": "Routes each task to the cheapest sufficient model tier; scope-guards UI agents away from data/logic.",
+  "version": "0.1.0",
+  "author": { "name": "michael-v17" }
+}
