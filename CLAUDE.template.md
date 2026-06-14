@@ -6,6 +6,7 @@ Use the cheapest sufficient handler. Escalate only on risk.
 - Text/copy/labels only        → text-and-copy-editor (haiku)
 - UI polish (CSS/responsive)    → visual-polish (sonnet, effort low)
 - Normal frontend impl          → main session, or add a web-implementer (sonnet, effort medium)
+- Hard impl (animation/algo/perf)→ complex-implementer (opus, effort high) — escalates ONE task; main session model/effort unchanged
 - Planning a big/risky change   → opusplan, or architecture-auditor (opus) first
 - Risky data/logic/schema/store → architecture-auditor (opus), then implement
 - PR review                     → opus, or the advisor tool
