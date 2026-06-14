@@ -70,21 +70,38 @@ Opus 4.8 $5/$25, Fable $10/$50 (+ ~30% more tokens from Fable's tokenizer).
 
 ---
 
-## Build it
+## Install
+
+```
+/plugin marketplace add michael-v17/model-routing-kit
+/plugin install model-routing-kit@model-routing-kit
+```
+
+Then run `/onboard` in a project to write a project-specific routing block + scope-guard
+pattern into its `CLAUDE.md`.
+
+Verify the install locally before trusting it:
+
+```
+bash hooks/scope-guard.test.sh    # scope-guard behavior — 7/7
+bash hooks/install-smoke.test.sh  # manifests, hook wiring, agent frontmatter — 8/8
+```
+
+## What's in the box
 
 Full blueprint — paste-ready subagents, the scope-guard hook, plugin structure, the
 `/onboard` command, and the CLAUDE.md routing template — is in **[`DESIGN.md`](./DESIGN.md)**.
 
-Minimal MVP (~2–3h): `text-and-copy-editor` + `visual-polish` + `architecture-auditor` +
-`hooks/scope-guard.sh` + a `CLAUDE.template.md` routing block. Lean on built-in Explore,
-opusplan, `/effort`, and `/usage` for the rest.
+The MVP ships now: `text-and-copy-editor` + `visual-polish` + `architecture-auditor` +
+`hooks/scope-guard.sh` (+ test suite) + `CLAUDE.template.md` + `/onboard`. Lean on built-in
+Explore, opusplan, `/effort`, and `/usage` for the rest.
 
 ```
 model-routing-kit/
-  .claude-plugin/plugin.json
+  .claude-plugin/plugin.json + marketplace.json
   agents/        # text-and-copy-editor, visual-polish, architecture-auditor (+ optional web-implementer, pr-reviewer)
-  hooks/         # hooks.json + scope-guard.sh
-  commands/      # onboard, route
+  hooks/         # hooks.json + scope-guard.sh + scope-guard.test.sh + install-smoke.test.sh
+  commands/      # onboard (+ optional route)
   CLAUDE.template.md
 ```
 
@@ -98,8 +115,11 @@ model-routing-kit/
 
 ## Status
 
-Design + validated experiments. Plugin not yet built. Verify `fable`/`opusplan` aliases
-resolve in your Claude Code version before shipping defaults that depend on them.
+**MVP built and installable.** Core agents, scope-guard hook (7/7 behavior tests, 8/8 install
+smoke tests), `/onboard`, CLAUDE template, and marketplace manifest are in place. Optional
+Phase 2 pieces (`web-implementer`, `pr-reviewer`, `/route`) are not yet built. Verify
+`fable`/`opusplan` aliases resolve in your Claude Code version before relying on defaults
+that depend on them.
 
 ## License
 

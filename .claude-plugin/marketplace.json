@@ -1,0 +1,33 @@
+{
+  "name": "model-routing-kit",
+  "owner": {
+    "name": "michael-v17",
+    "url": "https://github.com/michael-v17/model-routing-kit"
+  },
+  "metadata": {
+    "description": "Token/quota-efficiency kit for Claude Code: routes each task to the cheapest sufficient model tier and scope-guards UI agents away from data/logic.",
+    "version": "0.1.0"
+  },
+  "plugins": [
+    {
+      "name": "model-routing-kit",
+      "source": "./",
+      "description": "Routes each task to the cheapest sufficient model tier (Haiku write-tier for copy, Sonnet for UI polish, Opus for risky data/architecture); scope-guards UI agents away from data/logic via a PreToolUse hook.",
+      "version": "0.1.0",
+      "author": {
+        "name": "michael-v17"
+      },
+      "category": "development",
+      "keywords": [
+        "model-routing",
+        "cost-optimization",
+        "token-efficiency",
+        "subagents",
+        "scope-guard",
+        "hooks",
+        "haiku",
+        "frontend"
+      ]
+    }
+  ]
+}
