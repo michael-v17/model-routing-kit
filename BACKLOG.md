@@ -38,3 +38,26 @@ que no reformule texto no solicitado.
 - **Estado:** pendiente.
 - **Archivos:** `agents/text-and-copy-editor.md` (prompt), y posible guardrail en
   `hooks/scope-guard.sh`.
+
+---
+
+## TICKET 4 — Ledger de routing + comando `/route-review`
+
+Para poder **medir y corregir** el routing sesión a sesión (hoy es manual, vía `learnings.md`).
+Prototipado a mano en tecnologiasvm (rama `chore/routing-policy`): el `scope-guard.sh` ya
+escribe una línea JSON por `Edit|Write|MultiEdit|Bash` a `.claude/routing-log.jsonl`
+(gitignored) con `ts`, `agent` (atribución por tier), `tool`, `tool_target`, `decision`,
+`matched`. Falta subir esto al plugin para que **todo proyecto onboarded lo herede**:
+
+1. **Auto-log en el `scope-guard.sh` del plugin** — portar la línea JSONL ya probada en
+   tecnologiasvm. Captura la mitad *correctitud* (qué tier hizo qué, bloqueos falsos).
+2. **Comando `/route-review`** — lee `.claude/routing-log.jsonl` de la sesión + el diff, y
+   reporta: ¿cada tarea cayó en su tier?, ¿bloqueos falsos?, ¿el driver hizo trivialidades?
+   → propone correcciones (RISKY, prompts) o abre ticket.
+3. **`/onboard` añade `.claude/routing-log.jsonl` al `.gitignore`** del proyecto destino.
+
+Nota: la mitad *costo* (tokens/cuota por tier) NO es auto-capturable — `/usage` es interactivo;
+el review pide pegarlo a mano. Depende del Ticket 1 (RISKY desde config) para no re-forkear el hook.
+
+- **Estado:** pendiente (prototipo validado en tecnologiasvm).
+- **Archivos:** `hooks/scope-guard.sh`, `commands/route-review.md` (nuevo), `commands/onboard.md`.
