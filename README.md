@@ -78,7 +78,8 @@ Opus 4.8 $5/$25, Fable $10/$50 (+ ~30% more tokens from Fable's tokenizer).
 ```
 
 Then run `/onboard` in a project to write a project-specific routing block + scope-guard
-pattern into its `CLAUDE.md`.
+pattern into its `CLAUDE.md`. Day-to-day reference: **[`USAGE.md`](./USAGE.md)** (the ladder,
+which agent for what, and "I want a harder task — which one?").
 
 Verify the install locally before trusting it:
 
