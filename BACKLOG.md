@@ -79,3 +79,34 @@ el review pide pegarlo a mano. Depende del Ticket 1 (RISKY desde config) para no
 
 - **Estado:** pendiente (prototipo validado en tecnologiasvm).
 - **Archivos:** `hooks/scope-guard.sh`, `commands/route-review.md` (nuevo), `commands/onboard.md`.
+
+---
+
+## TICKET 5 — Knob de tier por tarea (`/run-at`) + intermedios + log de elección manual
+
+La escalera actual es **bimodal**: haiku · sonnet/low · opus/high · opus/xhigh — sin
+intermedios (**opus/medium, sonnet/high, opus/low**), que es donde vive mucho trabajo real.
+Hoy `/route` clasifica y elige por ti; no hay forma de que **el usuario** dirija una tarea
+puntual a un tier arbitrario sin cambiar el `/model` y `/effort` de toda la sesión.
+
+**Diseño:**
+1. **Comando `/run-at <model> <effort> "<tarea>"`** — despacha la tarea como subagente puntual
+   en el tier exacto pedido, **sin tocar el `/model`/`/effort` de la sesión** (cache intacto).
+   Esto expone el continuo completo por tarea → hace innecesario predefinir rungs intermedios.
+2. **Shorthand de una letra (posicional, rápido de tipear):**
+   - modelo: `o`=opus, `s`=sonnet, `h`=haiku
+   - effort: `l`=low, `m`=medium, `h`=high, `x`=xhigh
+   - La `h` no choca porque la posición lo desambigua: `s h` = sonnet/high; `h m` = haiku/medium.
+     Aceptar también palabras completas y la forma pegada `oh` / `sm`.
+3. **Loguear la elección manual** (conecta con Ticket 4) — el comando escribe su propia línea a
+   `.claude/routing-log.jsonl` con `source:"manual"`, `model`, `effort`, `task`. Así
+   `/route-review` puede **detectar misfires de intuición**: ej. "escalaste a opus/high una
+   tarea que 3 señales dicen trivial", o "corriste haiku algo que falló y reintentaste arriba".
+   Aprender de las elecciones manuales es la mitad más rica del ledger.
+
+**Opcional encima:** 1-2 agentes nombrados para los combos intermedios que se repitan (p.ej.
+un `implementer` en opus/medium o sonnet/high), pero el knob genérico ataca la raíz.
+
+- **Estado:** pendiente (depende del dispatch de `/route` y del ledger del Ticket 4).
+- **Archivos:** `commands/run-at.md` (nuevo), `hooks/scope-guard.sh` o el comando (log manual),
+  `USAGE.md`, `CLAUDE.template.md`.
