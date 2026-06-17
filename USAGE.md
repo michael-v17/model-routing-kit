@@ -43,10 +43,28 @@ already failed at it).
 | Command | What it does |
 |---|---|
 | `/route "<task>"` | Classifies the task, picks the cheapest sufficient tier, and dispatches to the right subagent — **without** changing your session model/effort. Use when unsure. |
+| `/run-at <model> <effort> "<task>"` | You pick the exact tier; it dispatches a one-off subagent there — **without** changing your session model/effort. The manual counterpart to `/route`. Logs the choice to the routing ledger. |
 | `/onboard` | Detects the repo's stack and writes a project-specific routing block + scope-guard pattern into its `CLAUDE.md`. Run once per project. |
 | `/model sonnet` \| `/model opusplan` | Set the session/driver tier. `opusplan` = Opus plans, Sonnet executes. |
 | `/effort low` | On expensive tiers, skip always-on thinking for routine work (no-op on Haiku). The real cost lever. |
 | `/usage` | Tokens/cost this session, attributed to subagents/skills/plugins. The manual "cost" half of metrics. |
+
+## `/run-at` shorthand
+
+Two leading tokens, positional: **model** then **effort**. One-letter, full word, or joined
+(`oh`, `sm`) all work. `h` = haiku in the model slot, high in the effort slot.
+
+| Model (1st) | Effort (2nd) |
+|---|---|
+| `o` opus · `s` sonnet · `h` haiku | `l` low · `m` medium · `h` high · `x` xhigh |
+
+```
+/run-at s h "refactor the cart reducer"     # sonnet / high
+/run-at oh "build the particle dissolve"     # opus / high
+/run-at h m "fix the empty-state copy"       # haiku / medium
+```
+
+Your session `/model` and `/effort` stay put — only that one task runs at the tier you named.
 
 ## Invoking an agent directly
 

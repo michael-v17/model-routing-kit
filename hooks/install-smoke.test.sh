@@ -58,5 +58,11 @@ if bash "$ROOT/hooks/scope-guard.test.sh" | grep -q 'FAIL'; then
   bad "scope-guard.test.sh has failing cases"
 else ok "scope-guard.test.sh all green"; fi
 
+# 9. /run-at command present and wires the manual ledger (Ticket 5A)
+runat="$ROOT/commands/run-at.md"
+if [ -f "$runat" ] && grep -q 'routing-log.jsonl' "$runat" && grep -q '"source":"manual"' "$runat"; then
+  ok "run-at command present and logs source:\"manual\" to routing-log.jsonl"
+else bad "run-at command missing or does not log the manual choice"; fi
+
 printf -- '----\n%d passed, %d failed\n' "$pass" "$fail"
 [ "$fail" -eq 0 ]

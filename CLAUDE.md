@@ -41,6 +41,7 @@ editing routing guidance — leaf savings are a rounding error next to the drive
 | `hooks/install-smoke.test.sh` | manifest/wiring/frontmatter tests (8/8) |
 | `commands/onboard.md` | `/onboard` — writes a project-specific routing block + RISKY pattern |
 | `commands/route.md` | `/route` — per-task escalation helper |
+| `commands/run-at.md` | `/run-at <model> <effort> "<task>"` — manual per-task tier knob; dispatches a one-off subagent at the exact tier without changing session `/model`/`/effort`; logs `source:"manual"` to `.claude/routing-log.jsonl` (Ticket 5A) |
 | `CLAUDE.template.md` | what `/onboard` installs into a target project (≠ this file) |
 | `DESIGN.md` | full blueprint |
 | `BACKLOG.md` | **pending work lives here** — read before starting a change |
