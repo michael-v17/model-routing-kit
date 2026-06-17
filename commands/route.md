@@ -12,6 +12,7 @@ If $ARGUMENTS is empty, ask the user what the task is, then proceed.
 | Read-only "where/how does X work" | built-in **Explore** subagent | haiku, free |
 | Trivial wording/labels/typos, no layout or logic | **text-and-copy-editor** | haiku |
 | UI-only polish — CSS, spacing, typography, responsive | **visual-polish** | sonnet, effort low |
+| Moderately hard impl — non-trivial logic, multi-step refactor, stateful/cross-file changes that need real thought but not Opus | **implementer** | sonnet, effort high |
 | Genuinely hard implementation — complex animation/canvas/WebGL/particles, tricky algorithm, perf-sensitive rendering, intricate state/concurrency | **complex-implementer** | opus, effort high |
 | Risky data/logic/schema/store, or "is this change safe?" | **architecture-auditor** (inspect/plan first) | opus, effort xhigh |
 | Normal frontend impl that's neither trivial nor hard | main session, or visual-polish if UI-shaped | — |
@@ -19,6 +20,18 @@ If $ARGUMENTS is empty, ask the user what the task is, then proceed.
 ## 2. Pick the LOWEST plausible tier, then escalate only on risk signals
 Escalate when the task: touches persistence/adapters/schema/stores/auth/payments, spans >5
 files, mixes UI polish with data changes, or a smaller model has already failed at it.
+
+**Escalate EFFORT before MODEL.** Effort is the cheap axis — try a higher effort on the same
+model before reaching for a bigger model. The graduated ladder:
+
+```
+sonnet/low → sonnet/med → sonnet/high → opus/med → opus/high → opus/xhigh
+```
+
+Climb one rung at a time. `implementer` is the named rung at **sonnet/high**;
+`complex-implementer` at **opus/high**. The in-between combos (sonnet/med, opus/med, opus/low)
+aren't named agents — reach them with `/run-at <model> <effort> "<task>"`, which dispatches a
+one-off subagent at that exact tier without changing your session model/effort.
 
 ## 3. Confirm and dispatch
 - State the chosen handler and tier in one line, with the one reason it fits (e.g.

@@ -21,6 +21,7 @@ subagents. Cheap leaves only help if the driver itself is cheap.
 | Trivial wording / labels / typos / aria — no layout or logic | **text-and-copy-editor** | haiku |
 | UI-only polish — CSS, spacing, type, responsive | **visual-polish** | sonnet, effort low |
 | Normal frontend that's neither trivial nor hard | **main session** (you, on sonnet) | sonnet |
+| **Moderately hard, ONE task** — non-trivial logic, multi-step refactor, stateful/cross-file changes that need thought but not Opus | **implementer** | **sonnet, effort high** |
 | **Genuinely hard, ONE task** — complex animation/canvas/WebGL/particles, tricky algorithm, perf rendering, intricate state | **complex-implementer** | **opus, effort high** |
 | Risky / "is this change safe?" — data, schema, stores, routing, contracts, migrations | **architecture-auditor** (inspect & plan first) | opus, effort xhigh |
 | Big multi-section sweep / whole feature | **opusplan** (`/model opusplan`) | opus plans → sonnet executes |
@@ -28,6 +29,17 @@ subagents. Cheap leaves only help if the driver itself is cheap.
 **Rule of thumb:** pick the *lowest* plausible tier; escalate only on a real risk signal
 (touches persistence/auth/payments, spans >5 files, mixes UI with data, or a smaller model
 already failed at it).
+
+**Escalate effort before model.** Effort is the cheap axis — bump it on the same model before
+reaching for a bigger one. The graduated ladder, one rung at a time:
+
+```
+sonnet/low → sonnet/med → sonnet/high → opus/med → opus/high → opus/xhigh
+```
+
+Two rungs are named agents — `implementer` (sonnet/high) and `complex-implementer` (opus/high).
+The in-between combos (sonnet/med, opus/med, opus/low) aren't; hit them with
+`/run-at <model> <effort> "<task>"`.
 
 ## "I want to launch a harder task — which one?"
 

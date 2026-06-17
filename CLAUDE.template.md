@@ -5,11 +5,18 @@ Use the cheapest sufficient handler. Escalate only on risk.
 - Read-only discovery (locate files/components) → let the built-in Explore subagent handle it.
 - Text/copy/labels only        → text-and-copy-editor (haiku)
 - UI polish (CSS/responsive)    → visual-polish (sonnet, effort low)
-- Normal frontend impl          → main session, or add a web-implementer (sonnet, effort medium)
+- Normal frontend impl          → main session (sonnet)
+- Moderately hard impl          → implementer (sonnet, effort high) — non-trivial logic / multi-step refactor / stateful, but not Opus-grade; escalates ONE task, session unchanged
 - Hard impl (animation/algo/perf)→ complex-implementer (opus, effort high) — escalates ONE task; main session model/effort unchanged
 - Planning a big/risky change   → opusplan, or architecture-auditor (opus) first
 - Risky data/logic/schema/store → architecture-auditor (opus), then implement
 - PR review                     → opus, or the advisor tool
+
+## Escalate EFFORT before MODEL — the graduated ladder:
+sonnet/low → sonnet/med → sonnet/high → opus/med → opus/high → opus/xhigh. Try the cheap axis
+(effort) before a bigger model; climb one rung at a time. Named rungs: implementer (sonnet/high),
+complex-implementer (opus/high). Reach any in-between combo with `/run-at <model> <effort> "<task>"`
+— it runs ONE task at that exact tier without changing the session model/effort.
 
 ## Never use Opus for: typos, copy edits, label/placeholder changes, file location, simple CSS spacing.
 ## Fable: currently suspended (2026-06-12) — Opus 4.8 is the top tier. If restored, pin effort:low for routine work; never on trivial edits.

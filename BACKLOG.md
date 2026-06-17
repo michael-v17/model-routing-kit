@@ -82,7 +82,7 @@ el review pide pegarlo a mano. Depende del Ticket 1 (RISKY desde config) para no
 
 ---
 
-## TICKET 5 — Knob de tier por tarea (`/run-at`) + intermedios + log de elección manual
+## TICKET 5 — Knob de tier por tarea (`/run-at`) + intermedios + log de elección manual ✅ HECHO
 
 La escalera actual es **bimodal**: haiku · sonnet/low · opus/high · opus/xhigh — sin
 intermedios (**opus/medium, sonnet/high, opus/low**), que es donde vive mucho trabajo real.
@@ -104,9 +104,25 @@ puntual a un tier arbitrario sin cambiar el `/model` y `/effort` de toda la sesi
    tarea que 3 señales dicen trivial", o "corriste haiku algo que falló y reintentaste arriba".
    Aprender de las elecciones manuales es la mitad más rica del ledger.
 
-**Opcional encima:** 1-2 agentes nombrados para los combos intermedios que se repitan (p.ej.
-un `implementer` en opus/medium o sonnet/high), pero el knob genérico ataca la raíz.
+**Parte B — escalera intermedia (para que el medio también funcione automático):** el knob
+genérico ataca la raíz, pero además se hizo automático el eje barato:
+- **Principio "escalá effort antes que modelo"** documentado en `commands/route.md` y
+  `CLAUDE.template.md`, con la escalera graduada explícita:
+  `sonnet/low → sonnet/med → sonnet/high → opus/med → opus/high → opus/xhigh` (subí effort
+  antes que modelo; un rung por vez).
+- **Un solo agente intermedio nombrado:** `agents/implementer.md` (sonnet / effort high) — rung
+  medio entre el driver y `complex-implementer` (opus/high). Para lógica no trivial, refactor
+  multi-paso, componentes con estado que necesitan pensar más pero no capacidad Opus. Su
+  `description` dice cuándo NO usarlo (trivial→copy-editor, CSS→visual-polish, animación/canvas/
+  algoritmo duro→complex-implementer). Los demás combos (sonnet/med, opus/med, opus/low) NO son
+  agentes nombrados — se alcanzan con `/run-at`. NO está scope-guarded (no es agente UI-only).
 
-- **Estado:** pendiente (depende del dispatch de `/route` y del ledger del Ticket 4).
-- **Archivos:** `commands/run-at.md` (nuevo), `hooks/scope-guard.sh` o el comando (log manual),
-  `USAGE.md`, `CLAUDE.template.md`.
+- **Estado:** ✅ HECHO (2026-06-17). **Parte A:** `/run-at <model> <effort> "<tarea>"` despacha
+  un subagente puntual al tier exacto **sin tocar el `/model`/`/effort` de la sesión**; shorthand
+  posicional de una letra (`o/s/h` modelo, `l/m/h/x` effort; la `h` se desambigua por posición;
+  formas pegadas `oh`/`sm`); loguea la elección a `.claude/routing-log.jsonl` con `source:"manual"`
+  para que el futuro `/route-review` (Ticket 4) detecte misfires de intuición. **Parte B:**
+  escalera graduada + agente `implementer` (sonnet/high). Tests: `install-smoke` reconoce ambos
+  (`/run-at` loguea manual + `implementer` en sonnet/high) → 10/10; `scope-guard` intacto 16/16.
+- **Archivos:** `commands/run-at.md` (nuevo), `agents/implementer.md` (nuevo), `commands/route.md`,
+  `CLAUDE.template.md`, `USAGE.md`, `hooks/install-smoke.test.sh`, `CLAUDE.md`.

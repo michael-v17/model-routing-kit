@@ -64,5 +64,11 @@ if [ -f "$runat" ] && grep -q 'routing-log.jsonl' "$runat" && grep -q '"source":
   ok "run-at command present and logs source:\"manual\" to routing-log.jsonl"
 else bad "run-at command missing or does not log the manual choice"; fi
 
+# 10. intermediate implementer agent present at the correct tier (Ticket 5B)
+impl="$ROOT/agents/implementer.md"
+if [ -f "$impl" ] && grep -q '^model: *sonnet' "$impl" && grep -q '^effort: *high' "$impl"; then
+  ok "implementer agent present at sonnet/high (intermediate rung)"
+else bad "implementer agent missing or not sonnet/high"; fi
+
 printf -- '----\n%d passed, %d failed\n' "$pass" "$fail"
 [ "$fail" -eq 0 ]
