@@ -36,8 +36,8 @@ editing routing guidance — leaf savings are a rounding error next to the drive
 | `agents/visual-polish.md` | Sonnet/low — UI-only (CSS/markup), never data/logic |
 | `agents/complex-implementer.md` | Opus/high — escalate one hard task w/o changing session model |
 | `agents/architecture-auditor.md` | Opus/xhigh, read-only — inspect/plan risky work |
-| `hooks/scope-guard.sh` | PreToolUse hook: blocks UI agents from editing `RISKY` paths. RISKY is read from `.claude/scope-guard.conf` (`key=value`) in the target project, with a built-in default fallback (Ticket 1) |
-| `hooks/scope-guard.test.sh` | behavior tests (10/10) |
+| `hooks/scope-guard.sh` | PreToolUse hook: blocks UI agents from editing `RISKY` paths. RISKY is read from `.claude/scope-guard.conf` (`key=value`) per-agent (Ticket 2: `RISKY_<agent>` > `RISKY` > built-in default; built-in defaults differ per agent — copy editor also blocked from stylesheets) |
+| `hooks/scope-guard.test.sh` | behavior tests (16/16) |
 | `hooks/install-smoke.test.sh` | manifest/wiring/frontmatter tests (8/8) |
 | `commands/onboard.md` | `/onboard` — writes a project-specific routing block + RISKY pattern |
 | `commands/route.md` | `/route` — per-task escalation helper |
@@ -49,13 +49,15 @@ editing routing guidance — leaf savings are a rounding error next to the drive
 
 - **`BACKLOG.md` is the to-do source of truth.** 3 dogfood tickets open: RISKY-from-config,
   per-agent scope, copy-editor over-rewrite guard. Add/close tickets there, not in scattered notes.
-- **Verify before trusting a change:** `bash hooks/scope-guard.test.sh` (10/10) and
+- **Verify before trusting a change:** `bash hooks/scope-guard.test.sh` (16/16) and
   `bash hooks/install-smoke.test.sh` (8/8) must pass.
-- **RISKY is configurable per project** via `.claude/scope-guard.conf` (`key=value`, e.g.
-  `RISKY=<regex>`); the hook falls back to its built-in default when the conf is absent.
-  `/onboard` writes the conf — it must never fork `scope-guard.sh`. The `key=value` format is
-  deliberate so Ticket 2 can add `RISKY_visual_polish=` / `RISKY_text_and_copy_editor=` without
-  touching the parser.
+- **RISKY is configurable per project AND per agent** via `.claude/scope-guard.conf`
+  (`key=value`). Resolution for a given agent: `RISKY_<agent>` (hyphens→underscores, e.g.
+  `RISKY_visual_polish`) > base `RISKY` > built-in default. A per-agent key REPLACES the base
+  for that agent (it does not merge). Built-in defaults are differentiated (Ticket 2): both UI
+  agents are blocked from data/logic, but `text-and-copy-editor` is ALSO blocked from
+  stylesheets (restyling is visual-polish's job). `/onboard` writes the conf — it must never
+  fork `scope-guard.sh`.
 - **Fable is suspended** (since 2026-06-12, no restore date) — Opus 4.8 is top tier meanwhile.
   Verify `fable`/`opusplan` aliases resolve before relying on defaults that depend on them.
 - The hook fires on `Edit|Write|MultiEdit|Bash` via `${CLAUDE_PLUGIN_ROOT}/hooks/scope-guard.sh`.

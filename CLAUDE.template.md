@@ -22,4 +22,4 @@ business logic, data adapters, persistence, stores, routes, schemas, fixtures, A
 ## Project specifics (filled by /onboard):
 - Dev: <cmd>  Test: <cmd>  Lint: <cmd>  Typecheck: <cmd>  E2E: <cmd>
 - Styles live in: <paths>
-- Risky paths (regex): <RISKY pattern>  — source of truth is `.claude/scope-guard.conf` (`RISKY=<regex>`); this line just mirrors it for humans.
+- Risky paths (regex): <RISKY pattern>  — source of truth is `.claude/scope-guard.conf` (`RISKY=<regex>`, plus optional per-agent `RISKY_visual_polish=` / `RISKY_text_and_copy_editor=`); this line just mirrors the base for humans.

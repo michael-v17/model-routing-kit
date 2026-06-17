@@ -34,8 +34,16 @@ El scope-guard trata a `text-and-copy-editor` y `visual-polish` con el **mismo**
 mientras visual-polish sí puede tocar CSS/markup. Hace falta un scope **diferenciado por
 agente** para que cada uno tenga sus propios límites.
 
-- **Estado:** pendiente.
-- **Archivos:** `hooks/scope-guard.sh`.
+- **Estado:** ✅ HECHO (2026-06-17). Construido sobre el `key=value` del Ticket 1. El hook
+  resuelve RISKY por agente: `RISKY_<agente>` (guiones→underscores, p.ej. `RISKY_visual_polish`)
+  > `RISKY` base > default built-in. Una clave por-agente **reemplaza** la base (no fusiona).
+  Los defaults built-in ya están **diferenciados**: ambos agentes UI bloqueados de data/lógica,
+  pero `text-and-copy-editor` **también** de stylesheets (`\.css|\.scss|\.sass|\.less`) —
+  re-estilar es trabajo de visual-polish. Cubierto por 6 tests nuevos (16/16): diferenciación
+  built-in (copy-editor.css DENY / visual-polish.css ALLOW) + claves por-agente (aplica + reemplaza
+  base, para ambos agentes). Parser **sin cambios** (era el objetivo del formato).
+- **Archivos:** `hooks/scope-guard.sh`, `hooks/scope-guard.test.sh`, `commands/onboard.md`,
+  `CLAUDE.template.md`, `CLAUDE.md`.
 
 ---
 

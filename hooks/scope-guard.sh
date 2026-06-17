@@ -33,12 +33,19 @@ case "$agent_type" in
   *) ui_only=0 ;;
 esac
 
-# Risky path pattern. Default is zero-config (works out of the box). A project can override
-# it by writing .claude/scope-guard.conf with key=value lines, e.g. `RISKY=<regex>`. Full-line
-# `#` comments and blank lines are ignored. The key=value format (not a bare regex) is so
-# Ticket 2 can add per-agent keys (RISKY_visual_polish=... / RISKY_text_and_copy_editor=...)
-# later without changing this parser. Onboarding writes the conf — it never forks this script.
-RISKY_DEFAULT='adapter|persistence|store|schema|migration|fixture|/api/|\.sql'
+# Risky path pattern. Default is zero-config (works out of the box). A project can override it
+# by writing .claude/scope-guard.conf with key=value lines. Full-line `#` comments and blank
+# lines are ignored. Two levels of key (Ticket 1 + Ticket 2):
+#   RISKY=<regex>                      base pattern for any UI-only agent
+#   RISKY_visual_polish=<regex>        per-agent override (visual-polish)
+#   RISKY_text_and_copy_editor=<regex> per-agent override (text-and-copy-editor)
+# Onboarding writes the conf — it never forks this script.
+#
+# Built-in defaults are DIFFERENTIATED per agent (Ticket 2): both UI agents are blocked from
+# data/logic, but the copy editor is ALSO blocked from stylesheets — restyling is visual-polish's
+# job, the copy editor is text/strings only. (Both can still edit text inside .tsx/.jsx markup.)
+RISKY_DEFAULT_DATA='adapter|persistence|store|schema|migration|fixture|/api/|\.sql'
+RISKY_DEFAULT_STYLE='\.css|\.scss|\.sass|\.less'
 CONF="${CLAUDE_PROJECT_DIR:-.}/.claude/scope-guard.conf"
 
 # conf_get KEY -> echoes the value of the last uncommented `KEY = value` line in CONF, or nothing.
@@ -48,13 +55,21 @@ conf_get() {
     | tail -n1 | sed 's/^[[:space:]]*//; s/[[:space:]]*$//'
 }
 
-RISKY="$(conf_get RISKY)"
-[ -n "$RISKY" ] || RISKY="$RISKY_DEFAULT"
+# Resolve the RISKY pattern for THIS agent: per-agent conf key > base conf key > built-in default.
+agent_key="RISKY_$(printf '%s' "$agent_type" | tr '-' '_')"   # visual-polish -> RISKY_visual_polish
+RISKY="$(conf_get "$agent_key")"
+[ -n "$RISKY" ] || RISKY="$(conf_get RISKY)"
+if [ -z "$RISKY" ]; then
+  case "$agent_type" in
+    text-and-copy-editor) RISKY="$RISKY_DEFAULT_DATA|$RISKY_DEFAULT_STYLE" ;;
+    *)                    RISKY="$RISKY_DEFAULT_DATA" ;;
+  esac
+fi
 
 target="$file_path $command_str"
 
 if [ "$ui_only" -eq 1 ] && printf '%s' "$target" | grep -Eiq "$RISKY"; then
-  reason="scope-guard: '$agent_type' is UI-only but tried to touch a data/logic path ($target). Escalate to architecture-auditor."
+  reason="scope-guard: '$agent_type' tried to touch an out-of-scope path ($target). Escalate: visual-polish for styling/markup, architecture-auditor for data/logic."
   printf '{"hookSpecificOutput":{"hookEventName":"PreToolUse","permissionDecision":"deny","permissionDecisionReason":"%s"}}\n' "$reason"
   exit 0
 fi

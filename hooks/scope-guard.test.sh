@@ -80,4 +80,41 @@ run_conf "conf replaces default (adapter now allowed)" "$CONF_PROJ" \
 run_conf "empty conf falls back to default (adapter denied)" "$EMPTY_PROJ" \
   '{"agent_type":"visual-polish","tool_name":"Edit","tool_input":{"file_path":"src/data/userAdapter.ts"}}' DENY
 
-rm -rf "$CONF_PROJ" "$EMPTY_PROJ"
+# --- Ticket 2: per-agent scope (differentiated built-in defaults + per-agent conf keys) ---
+
+# Built-in differentiation (zero-config): copy-editor is text/strings only -> stylesheets are
+# out of scope for it; visual-polish OWNS stylesheets.
+# 11. copy-editor edits a stylesheet -> DENY (built-in style default for the copy editor)
+run "copy-editor edits theme.css -> denied (style is visual-polish's job)" \
+  '{"agent_type":"text-and-copy-editor","tool_name":"Edit","tool_input":{"file_path":"src/styles/theme.css"}}' DENY
+
+# 12. visual-polish edits the same stylesheet -> ALLOW (its default is data/logic only)
+run "visual-polish edits theme.css -> allowed" \
+  '{"agent_type":"visual-polish","tool_name":"Edit","tool_input":{"file_path":"src/styles/theme.css"}}' ALLOW
+
+# Per-agent conf keys: each UI agent can carry its OWN RISKY, which REPLACES the base RISKY.
+PER_AGENT_PROJ="$(mktemp -d)"
+mkdir -p "$PER_AGENT_PROJ/.claude"
+cat > "$PER_AGENT_PROJ/.claude/scope-guard.conf" <<'EOF'
+RISKY=adapter
+RISKY_visual_polish=widgets
+RISKY_text_and_copy_editor=onlytext
+EOF
+
+# 13. per-agent key applies: visual-polish denied on its own RISKY_visual_polish pattern
+run_conf "RISKY_visual_polish denies widgets path" "$PER_AGENT_PROJ" \
+  '{"agent_type":"visual-polish","tool_name":"Edit","tool_input":{"file_path":"src/widgets/Panel.tsx"}}' DENY
+
+# 14. per-agent key REPLACES base: 'adapter' (base RISKY) is allowed for visual-polish (its key=widgets)
+run_conf "per-agent key replaces base (visual-polish allowed on adapter)" "$PER_AGENT_PROJ" \
+  '{"agent_type":"visual-polish","tool_name":"Edit","tool_input":{"file_path":"src/data/userAdapter.ts"}}' ALLOW
+
+# 15. per-agent key applies: copy-editor denied on its own RISKY_text_and_copy_editor pattern
+run_conf "RISKY_text_and_copy_editor denies onlytext path" "$PER_AGENT_PROJ" \
+  '{"agent_type":"text-and-copy-editor","tool_name":"Edit","tool_input":{"file_path":"src/onlytext/copy.ts"}}' DENY
+
+# 16. per-agent key REPLACES base: 'adapter' is allowed for copy-editor (its key=onlytext)
+run_conf "per-agent key replaces base (copy-editor allowed on adapter)" "$PER_AGENT_PROJ" \
+  '{"agent_type":"text-and-copy-editor","tool_name":"Edit","tool_input":{"file_path":"src/data/userAdapter.ts"}}' ALLOW
+
+rm -rf "$CONF_PROJ" "$EMPTY_PROJ" "$PER_AGENT_PROJ"
