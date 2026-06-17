@@ -12,8 +12,18 @@ en `hooks/scope-guard.sh`. Debería leerse de la configuración del proyecto (p.
 que `/onboard` escribe en el `CLAUDE.md` o en un archivo de config), para que cada repo defina
 sus propias rutas riesgosas sin editar el script del plugin.
 
-- **Estado:** pendiente.
-- **Archivos:** `hooks/scope-guard.sh`, `commands/onboard.md`.
+- **Estado:** ✅ HECHO (2026-06-17). El hook lee `RISKY` de `.claude/scope-guard.conf`
+  (formato `key=value`: `RISKY=<regex>`), con fallback al default built-in cuando el conf no
+  existe o no define la clave (backward-compat). El formato `key=value` se eligió a propósito
+  para que el Ticket 2 agregue `RISKY_visual_polish=` / `RISKY_text_and_copy_editor=` sin tocar
+  el parser. `/onboard` (step 9) ahora escribe el conf y NUNCA forkea el script. Cubierto por
+  3 tests nuevos (10/10 en scope-guard.test.sh: deny por conf, conf reemplaza al default,
+  conf vacío → default).
+- **Archivos:** `hooks/scope-guard.sh`, `hooks/scope-guard.test.sh`, `commands/onboard.md`,
+  `CLAUDE.template.md`, `CLAUDE.md`.
+- **Follow-up (cuando esto shippee):** migrar tecnologiasvm a `.claude/scope-guard.conf` y
+  **dropear el `RISKY` inline** de su `scope-guard.sh` forkeado (ya en `main`). Eso de paso
+  colapsa el doble-guard señalado en `learnings.md`.
 
 ---
 
