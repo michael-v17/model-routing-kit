@@ -126,3 +126,55 @@ genérico ataca la raíz, pero además se hizo automático el eje barato:
   (`/run-at` loguea manual + `implementer` en sonnet/high) → 10/10; `scope-guard` intacto 16/16.
 - **Archivos:** `commands/run-at.md` (nuevo), `agents/implementer.md` (nuevo), `commands/route.md`,
   `CLAUDE.template.md`, `USAGE.md`, `hooks/install-smoke.test.sh`, `CLAUDE.md`.
+
+---
+
+## TICKET 6 — Self-check de registro: `enabled ≠ registered`
+
+Detectado en el 3er dogfood (tecnologiasvm, 2026-06-19). El plugin estaba **habilitado** en
+`settings.json` (`model-routing-kit@model-routing-kit: true`) y sus agentes habían funcionado
+horas antes (el `routing-log.jsonl` prueba que `complex-implementer` corrió a las 16:25), pero
+en una sesión posterior el routing intentó escalar a `complex-implementer` y falló con
+`Agent type 'complex-implementer' not found` — **cero agentes del kit registrados**. Causa raíz:
+el `CLAUDE_CONFIG_DIR` está **compartido entre proyectos**, y actividad de plugins en otro repo
+(StoryPlots) reescribió el registro compartido y **expulsó el marketplace local** del kit de
+`known_marketplaces.json` / `installed_plugins.json`. El flag `enabled` quedó `true`; el
+marketplace que lo resuelve desapareció → los agentes no se registraron al arrancar.
+
+El problema: el fallo solo se descubre **en el momento del escalado**, y el `scope-guard.sh`
+hardcodea "escalate to complex-implementer or architecture-auditor" en su mensaje de denegación
+— si ese agente no está registrado, el guard manda al driver a un callejón sin salida.
+
+**Diseño:** un check (hook `SessionStart`, o lazy en el primer disparo del scope-guard) que
+verifique que los agentes nombrados del kit (`complex-implementer`, `architecture-auditor`,
+`visual-polish`, `text-and-copy-editor`, `implementer`) estén realmente registrados, y **avise
+fuerte** si `enabled ≠ registered` — en vez de fallar callado al escalar. Diagnóstico: revisar
+`known_marketplaces.json` (¿está el marketplace?) + `installed_plugins.json` (¿el plugin, scoped
+al projectPath correcto?), no solo `settings.json`.
+
+- **Estado:** pendiente.
+- **Archivos:** `hooks/` (nuevo SessionStart o check en `scope-guard.sh`), `commands/onboard.md`
+  (recomendar instalar a scope **user/global** para que la churn de un repo hermano no lo expulse),
+  `USAGE.md` (sección "enabled ≠ registered" + cómo re-añadir el marketplace).
+
+---
+
+## TICKET 7 — Fallback de escalado que nunca baje del tier requerido
+
+Mismo dogfood. Cuando el agente de escalado nombrado no existe (Ticket 6), hoy el
+comportamiento de hecho fue: el driver lo construyó inline. **Esta vez no dolió porque el driver
+ya era Opus 4.8** — el tier exacto que `complex-implementer` mapea. Pero con el driver en
+**Sonnet** (el default recomendado del propio kit, por el lever de "driver barato" de 2026-06-14),
+la misma falla **degrada en silencio**: trabajo que la escalera marca Opus aterriza en Sonnet/main
+sin ninguna señal. Tensión directa con el lever dominante: cuanto más barato el driver, más
+depende el kit de que sus agentes de escalado estén realmente registrados.
+
+**Diseño:** cuando un agente de escalado nombrado falta, la policy debe:
+1. hacerlo en la sesión principal **solo si** el driver ya está **en o por encima** del tier
+   requerido; de lo contrario
+2. **parar y avisar** ("falta `complex-implementer`; subí con `/model opus` o reinstalá el plugin")
+   — **nunca** degradar por debajo del tier que la escalera pide.
+
+- **Estado:** pendiente (depende del check del Ticket 6 para saber qué falta).
+- **Archivos:** `commands/route.md`, `CLAUDE.template.md` (regla de fallback explícita),
+  `hooks/scope-guard.sh` (mensaje de escalado condicionado a registro + tier del driver).
