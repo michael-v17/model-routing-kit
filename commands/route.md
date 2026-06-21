@@ -40,4 +40,19 @@ one-off subagent at that exact tier without changing your session model/effort.
 - Then delegate the task to that subagent. For read-only discovery, just let Explore handle it.
 - If the task is ambiguous between two tiers, ask one quick question before dispatching.
 
+## 4. If a named escalation agent is MISSING ("Agent type not found") — never degrade
+`enabled ≠ registered`: the plugin can be on in settings yet have its agents unregistered (a
+sibling repo sharing `CLAUDE_CONFIG_DIR` can evict the kit's marketplace — see USAGE.md). When
+the agent you'd escalate to (`complex-implementer`, `architecture-auditor`, `implementer`)
+doesn't exist, the rule is:
+
+- **Build it inline in this session ONLY if the driver is already AT OR ABOVE the required tier.**
+  e.g. the task maps to `complex-implementer` (opus/high) and your session is already opus/high+
+  → do it inline.
+- **Otherwise STOP and tell the user**: "missing `complex-implementer`; raise with `/model opus`
+  (and effort) or reinstall the plugin." Then wait.
+- **NEVER silently run the task on a tier BELOW what the ladder requires.** Downgrading
+  opus-grade work onto a Sonnet driver is the exact failure this rule exists to prevent — and
+  it's most dangerous precisely when the driver is the recommended cheap Sonnet.
+
 Never route trivial edits to opus. Never route hard rendering/logic to the haiku copy tier.

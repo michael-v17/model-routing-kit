@@ -72,7 +72,11 @@ escribe una línea JSON por `Edit|Write|MultiEdit|Bash` a `.claude/routing-log.j
 2. **Comando `/route-review`** — lee `.claude/routing-log.jsonl` de la sesión + el diff, y
    reporta: ¿cada tarea cayó en su tier?, ¿bloqueos falsos?, ¿el driver hizo trivialidades?
    → propone correcciones (RISKY, prompts) o abre ticket.
-3. **`/onboard` añade `.claude/routing-log.jsonl` al `.gitignore`** del proyecto destino.
+3. **`/onboard` añade los artefactos locales del kit al `.gitignore`** del proyecto destino —
+   AMBOS: `.claude/routing-log.jsonl` (este ticket) y `.claude/.routing-kit-regcheck` (el stamp
+   de warn-once del Ticket 6). Ninguno debe poder comitearse por accidente; son del mismo dominio
+   (estado local por-proyecto del kit). `commands/onboard.md` ya añade ambos (paso 11) — al
+   formalizar este ticket, consolidar ahí en vez de duplicar el mecanismo.
 
 Nota: la mitad *costo* (tokens/cuota por tier) NO es auto-capturable — `/usage` es interactivo;
 el review pide pegarlo a mano. Depende del Ticket 1 (RISKY desde config) para no re-forkear el hook.
@@ -152,10 +156,21 @@ fuerte** si `enabled ≠ registered` — en vez de fallar callado al escalar. Di
 `known_marketplaces.json` (¿está el marketplace?) + `installed_plugins.json` (¿el plugin, scoped
 al projectPath correcto?), no solo `settings.json`.
 
-- **Estado:** pendiente.
-- **Archivos:** `hooks/` (nuevo SessionStart o check en `scope-guard.sh`), `commands/onboard.md`
-  (recomendar instalar a scope **user/global** para que la churn de un repo hermano no lo expulse),
-  `USAGE.md` (sección "enabled ≠ registered" + cómo re-añadir el marketplace).
+- **Estado:** ✅ HECHO (2026-06-20). Hook **SessionStart** (`hooks/session-regcheck.sh`)
+  + librería compartida (`hooks/registration-check.sh`). Es **file-based** (un hook no puede
+  preguntarle a Claude Code "¿qué agentes están registrados?"): lee `known_marketplaces.json`
+  (¿está el marketplace del kit?) + `installed_plugins.json` (¿el plugin, en scope user/global o
+  con `projectPath` == este proyecto? — un entry de scope local/project de un repo hermano NO
+  cuenta) bajo `${CLAUDE_CONFIG_DIR:-~/.claude}/plugins/`. La lista esperada de agentes se
+  **deriva de `agents/*.md`** (no hardcodeada). Si `enabled ≠ registered`, avisa fuerte vía
+  `additionalContext` con el fix (re-add marketplace + reinstall) y recomienda scope **user/global**.
+  **Warning-once** por firma de problema (stamp `.claude/.routing-kit-regcheck`); se re-arma al
+  sanarse. `commands/onboard.md` (paso 10) recomienda user/global; `USAGE.md` tiene sección
+  "enabled ≠ registered" (síntoma + diagnóstico jq + fix). Tests: `registration-check.test.sh`
+  (marketplace ausente → avisa; registrado → silencio).
+- **Archivos:** `hooks/registration-check.sh` (nuevo), `hooks/session-regcheck.sh` (nuevo),
+  `hooks/hooks.json`, `hooks/registration-check.test.sh` (nuevo), `hooks/install-smoke.test.sh`,
+  `commands/onboard.md`, `USAGE.md`, `CLAUDE.template.md`.
 
 ---
 
@@ -175,6 +190,17 @@ depende el kit de que sus agentes de escalado estén realmente registrados.
 2. **parar y avisar** ("falta `complex-implementer`; subí con `/model opus` o reinstalá el plugin")
    — **nunca** degradar por debajo del tier que la escalera pide.
 
-- **Estado:** pendiente (depende del check del Ticket 6 para saber qué falta).
-- **Archivos:** `commands/route.md`, `CLAUDE.template.md` (regla de fallback explícita),
-  `hooks/scope-guard.sh` (mensaje de escalado condicionado a registro + tier del driver).
+- **Estado:** ✅ HECHO (2026-06-20). Policy explícita en `commands/route.md` (paso 4) y
+  `CLAUDE.template.md`: construir inline **solo si** el driver ya está en o por encima del tier
+  requerido; si no, **parar y avisar** ("falta `complex-implementer`; subí con `/model opus` o
+  reinstalá"); **nunca** degradar por debajo de lo que pide la escalera. El `scope-guard.sh`
+  ahora **condiciona el mensaje de escalado al registro** (vía la librería del Ticket 6): si los
+  agentes de escalado NO están registrados, el deny cambia a un mensaje SAFE FALLBACK que ordena
+  STOP/subir tier en vez de mandar a `architecture-auditor` (que fallaría con "Agent type not
+  found"). El chequeo está **gateado por `CLAUDE_PLUGIN_ROOT`** para que los tests de comportamiento
+  (que pipean payloads crudos sin plugin root) mantengan su mensaje default determinista. El tier
+  del driver se codifica como **texto de policy en el mensaje** (el modelo conoce su propio tier);
+  el hook no puede leer de forma fiable el `/model` de la sesión. Tests: `registration-check.test.sh`
+  cubre (b) agente ausente → no degrada / SAFE FALLBACK, y (b') registrado → mensaje normal.
+- **Archivos:** `commands/route.md`, `CLAUDE.template.md`, `hooks/scope-guard.sh`,
+  `hooks/registration-check.sh`, `hooks/registration-check.test.sh`.

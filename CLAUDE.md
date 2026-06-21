@@ -37,9 +37,12 @@ editing routing guidance — leaf savings are a rounding error next to the drive
 | `agents/implementer.md` | Sonnet/high — intermediate rung; moderately hard impl (non-trivial logic/refactor/state) w/o changing session model. NOT scope-guarded (not a UI-only agent) |
 | `agents/complex-implementer.md` | Opus/high — escalate one hard task w/o changing session model |
 | `agents/architecture-auditor.md` | Opus/xhigh, read-only — inspect/plan risky work |
-| `hooks/scope-guard.sh` | PreToolUse hook: blocks UI agents from editing `RISKY` paths. RISKY is read from `.claude/scope-guard.conf` (`key=value`) per-agent (Ticket 2: `RISKY_<agent>` > `RISKY` > built-in default; built-in defaults differ per agent — copy editor also blocked from stylesheets) |
+| `hooks/scope-guard.sh` | PreToolUse hook: blocks UI agents from editing `RISKY` paths. RISKY is read from `.claude/scope-guard.conf` (`key=value`) per-agent (Ticket 2: `RISKY_<agent>` > `RISKY` > built-in default; built-in defaults differ per agent — copy editor also blocked from stylesheets). Ticket 7: when escalation agents aren't registered, the deny message switches to a SAFE-FALLBACK (STOP/raise tier, never downgrade) — gated on `CLAUDE_PLUGIN_ROOT` so tests stay deterministic |
+| `hooks/registration-check.sh` | shared lib (sourced): file-based registration checks — reads `known_marketplaces.json` + `installed_plugins.json` under `${CLAUDE_CONFIG_DIR:-~/.claude}/plugins/`; derives expected agents from `agents/*.md` (Tickets 6/7) |
+| `hooks/session-regcheck.sh` | SessionStart hook (Ticket 6): warns LOUDLY (warn-once per problem) when `enabled ≠ registered`; surfaces fix via `additionalContext` |
 | `hooks/scope-guard.test.sh` | behavior tests (16/16) |
-| `hooks/install-smoke.test.sh` | manifest/wiring/frontmatter tests (10/10) |
+| `hooks/registration-check.test.sh` | self-check + safe-fallback tests (8/8) |
+| `hooks/install-smoke.test.sh` | manifest/wiring/frontmatter tests (12/12) |
 | `commands/onboard.md` | `/onboard` — writes a project-specific routing block + RISKY pattern |
 | `commands/route.md` | `/route` — per-task escalation helper |
 | `commands/run-at.md` | `/run-at <model> <effort> "<task>"` — manual per-task tier knob; dispatches a one-off subagent at the exact tier without changing session `/model`/`/effort`; logs `source:"manual"` to `.claude/routing-log.jsonl` (Ticket 5A) |
@@ -51,8 +54,9 @@ editing routing guidance — leaf savings are a rounding error next to the drive
 
 - **`BACKLOG.md` is the to-do source of truth.** 3 dogfood tickets open: RISKY-from-config,
   per-agent scope, copy-editor over-rewrite guard. Add/close tickets there, not in scattered notes.
-- **Verify before trusting a change:** `bash hooks/scope-guard.test.sh` (16/16) and
-  `bash hooks/install-smoke.test.sh` (10/10) must pass.
+- **Verify before trusting a change:** `bash hooks/scope-guard.test.sh` (16/16),
+  `bash hooks/registration-check.test.sh` (8/8), and `bash hooks/install-smoke.test.sh` (12/12)
+  must pass. (`install-smoke` runs the other two as sub-checks.)
 - **RISKY is configurable per project AND per agent** via `.claude/scope-guard.conf`
   (`key=value`). Resolution for a given agent: `RISKY_<agent>` (hyphens→underscores, e.g.
   `RISKY_visual_polish`) > base `RISKY` > built-in default. A per-agent key REPLACES the base

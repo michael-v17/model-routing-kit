@@ -21,6 +21,14 @@ complex-implementer (opus/high). Reach any in-between combo with `/run-at <model
 ## Never use Opus for: typos, copy edits, label/placeholder changes, file location, simple CSS spacing.
 ## Fable: currently suspended (2026-06-12) — Opus 4.8 is the top tier. If restored, pin effort:low for routine work; never on trivial edits.
 
+## Missing escalation agent ("Agent type not found") — STOP, never downgrade:
+`enabled ≠ registered`. The plugin can be on in settings yet have ZERO agents registered (a
+sibling repo sharing `CLAUDE_CONFIG_DIR` can evict the kit's marketplace). If escalating to a
+named agent (complex-implementer / architecture-auditor / implementer) fails:
+- Do it inline ONLY if the driver is ALREADY at or above the required tier (e.g. complex-implementer = opus/high).
+- Otherwise STOP: "missing <agent>; raise with /model opus or reinstall the plugin." Wait — do not proceed.
+- NEVER run the task below the tier the ladder requires. (A SessionStart self-check warns up front when this happens; reinstall at user/global scope to prevent it.)
+
 ## Scope guard — UI-only agents must NOT touch:
 business logic, data adapters, persistence, stores, routes, schemas, fixtures, API contracts. Do not invent data.
 

@@ -70,5 +70,18 @@ if [ -f "$impl" ] && grep -q '^model: *sonnet' "$impl" && grep -q '^effort: *hig
   ok "implementer agent present at sonnet/high (intermediate rung)"
 else bad "implementer agent missing or not sonnet/high"; fi
 
+# 11. SessionStart registration self-check wired and executable (Ticket 6)
+selfcheck="$ROOT/hooks/session-regcheck.sh"
+if grep -q 'SessionStart' "$ROOT/hooks/hooks.json" \
+   && grep -q 'session-regcheck.sh' "$ROOT/hooks/hooks.json" \
+   && [ -x "$selfcheck" ] && [ -x "$ROOT/hooks/registration-check.sh" ]; then
+  ok "SessionStart self-check wired in hooks.json and scripts executable (Ticket 6)"
+else bad "registration self-check not wired or scripts not executable"; fi
+
+# 12. registration self-check behavior suite still green (Tickets 6 & 7)
+if bash "$ROOT/hooks/registration-check.test.sh" | grep -q 'FAIL'; then
+  bad "registration-check.test.sh has failing cases"
+else ok "registration-check.test.sh all green"; fi
+
 printf -- '----\n%d passed, %d failed\n' "$pass" "$fail"
 [ "$fail" -eq 0 ]

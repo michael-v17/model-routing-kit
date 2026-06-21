@@ -91,8 +91,54 @@ The scope-guard logs every edit to `.claude/routing-log.jsonl` in the onboarded 
 the routing log + the session diff and report whether each task hit its intended tier, plus
 any false blocks. (Auto-review via `/route-review` is BACKLOG Ticket 4.)
 
+## Troubleshooting: "enabled ≠ registered" (Agent type not found)
+
+**Symptom.** The plugin shows as on (`model-routing-kit@model-routing-kit: true` in
+`settings.json`), its agents worked earlier, but now an escalation dies with
+`Agent type 'complex-implementer' not found` — and *none* of the kit's agents are available.
+
+**Why it happens.** `CLAUDE_CONFIG_DIR` is **shared across projects**. When you use plugins in a
+sibling repo, Claude Code rewrites the **shared** registry files, and that churn can **evict the
+kit's local marketplace**. The `enabled` flag stays `true`, but the marketplace that resolves it
+is gone, so the agents never register at startup. **`enabled` is not `registered`** — and
+`settings.json` alone can't tell you which: the registry files can.
+
+The kit now ships a **SessionStart self-check** (`hooks/session-regcheck.sh`) that reads
+the registry at session start and warns LOUDLY (once per distinct problem) when the kit is
+enabled-but-not-registered — instead of letting you discover it only when an escalation fails.
+
+**Diagnose** (replace `$CLAUDE_CONFIG_DIR` with your actual config dir, e.g. `~/.claude`):
+
+```bash
+# 1. Is the kit's MARKETPLACE present?
+jq 'has("model-routing-kit")' "$CLAUDE_CONFIG_DIR/plugins/known_marketplaces.json"
+
+# 2. Is the PLUGIN registered for THIS project (or at user/global scope)?
+jq '.plugins["model-routing-kit@model-routing-kit"]' "$CLAUDE_CONFIG_DIR/plugins/installed_plugins.json"
+```
+
+If (1) is `false` or (2) is `null` / only lists *other* projects' paths, the kit isn't registered
+here.
+
+**Fix:**
+
+```
+/plugin marketplace add <path-to-model-routing-kit>
+/plugin install model-routing-kit@model-routing-kit
+```
+
+Install at **user/global scope**, not project/local — that way a sibling repo's plugin churn
+can't evict it again. (`/onboard` recommends this too.)
+
+**Until it's fixed — don't downgrade.** If an escalation agent is missing, do the task inline
+**only if your session is already at or above the required tier**. Otherwise **stop and raise
+`/model`** (or reinstall) — never run opus-grade work on a Sonnet driver just because the agent
+vanished. This matters most under the recommended cheap-Sonnet driver, where the downgrade is
+silent.
+
 ## Don't
 
 - Don't route trivial edits to Opus.
 - Don't route hard rendering/logic to the Haiku copy tier.
 - Don't leave the driver on Opus "to be safe" — that's the expensive habit this kit exists to break.
+- Don't trust `enabled: true` as proof the agents are registered — see "enabled ≠ registered" above.

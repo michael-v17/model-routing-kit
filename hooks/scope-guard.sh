@@ -69,7 +69,24 @@ fi
 target="$file_path $command_str"
 
 if [ "$ui_only" -eq 1 ] && printf '%s' "$target" | grep -Eiq "$RISKY"; then
-  reason="scope-guard: '$agent_type' tried to touch an out-of-scope path ($target). Escalate: visual-polish for styling/markup, architecture-auditor for data/logic."
+  # Default escalation guidance (escalation agents assumed available).
+  escalation="Escalate: visual-polish for styling/markup, architecture-auditor for data/logic."
+
+  # Ticket 7 — never send the agent to a dead end. If the kit's escalation agents are NOT
+  # registered (Ticket 6 failure mode), pointing at architecture-auditor would fail with
+  # "Agent type not found", and the tempting "just do it inline" silently downgrades work the
+  # ladder marked opus down to the driver tier. Switch to a SAFE-FALLBACK message instead.
+  #
+  # Gated on CLAUDE_PLUGIN_ROOT being set (i.e. a real plugin run) so the behavior tests, which
+  # pipe raw payloads without a plugin root, keep their deterministic default message.
+  if [ -n "${CLAUDE_PLUGIN_ROOT:-}" ] && [ -f "${CLAUDE_PLUGIN_ROOT}/hooks/registration-check.sh" ]; then
+    . "${CLAUDE_PLUGIN_ROOT}/hooks/registration-check.sh"
+    if ! rk_agents_available "${CLAUDE_PROJECT_DIR:-$PWD}"; then
+      escalation="SAFE FALLBACK — the kit's escalation agent (architecture-auditor, opus/xhigh) is NOT registered, so it cannot be invoked. Do this inline ONLY if your session is already AT OR ABOVE the required tier (data/logic ≈ opus). If the driver is below it, STOP and either raise it (/model opus) or reinstall the plugin — NEVER downgrade the task below the tier the ladder requires."
+    fi
+  fi
+
+  reason="scope-guard: '$agent_type' tried to touch an out-of-scope path ($target). $escalation"
   printf '{"hookSpecificOutput":{"hookEventName":"PreToolUse","permissionDecision":"deny","permissionDecisionReason":"%s"}}\n' "$reason"
   exit 0
 fi
