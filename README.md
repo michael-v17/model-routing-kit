@@ -49,7 +49,36 @@ Also measured, smaller: a four-arm router smoke (Haiku loop · GPT-6 Luna loop �
 
 ## Status & roadmap
 
-The evidence layer is complete and reproducible (below). The harness pieces (agent ladder, ledger hook, audit/migrate workflows) are being extracted from a production setup — see [docs/ROADMAP.md](docs/ROADMAP.md). Contributions welcome once the extraction lands.
+**v0.6.0 — installable.** The full harness ships in [`plugin/`](plugin/): five role agents, the telemetry ledger, the scope-guard, `/onboard` + `/route` commands, and the audit/migrate/probe workflows — 72 tests, all green (`bash plugin/hooks/*.test.sh plugin/workflows/*.test.sh`). What remains on the [roadmap](docs/ROADMAP.md) is the generalization of the decision-layer harness, not the machinery.
+
+## Install
+
+```bash
+claude plugin marketplace add michael-v17/model-routing-kit
+claude plugin install model-routing-kit@model-routing-kit
+```
+
+Then, in any project: run `/model-routing-kit:onboard` once — it detects your stack and writes the project's routing map. After that, routing is automatic: Claude Code's agent picker sees the kit's agents, each pinned to its tier, and trivial text work lands on haiku while audits go to opus.
+
+**The 2-minute proof it works** — the ledger never lies:
+
+```
+# in any project with the plugin installed, ask Claude Code something like:
+#   "use the text-and-copy-editor agent to fix the typo 'recieve' in the README"
+tail .claude/routing-log.jsonl
+```
+
+The last line shows the dispatch: agent, requested model (`haiku`), resolved model, tokens, duration. Trivial text went to the cheap tier, and you have the receipt. The same ledger is what our evaluation ran on.
+
+## What you get
+
+| Piece | File | What it does |
+|---|---|---|
+| Role ladder | `plugin/agents/` (5) | text-and-copy-editor (haiku) · implementer, visual-polish (sonnet) · architecture-auditor, complex-implementer (opus) — tier pinned in frontmatter |
+| Ledger | `plugin/hooks/agent-telemetry.sh` | every dispatch logged: requested vs resolved model, tokens, duration |
+| Scope guard | `plugin/hooks/scope-guard.sh` | a UI agent can never edit data adapters/stores/schemas — 18/18 tests |
+| Onboarding | `plugin/commands/onboard.md`, `route.md` | per-project routing map + a routing cheat-sheet |
+| Workflows | `plugin/workflows/` | routed audit (parallel finders + adversarial verify), mechanical migrate, and the probe |
 
 ## Reproduce the evaluation
 
