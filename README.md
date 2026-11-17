@@ -51,6 +51,22 @@ Also measured, smaller: a four-arm router smoke (Haiku loop · GPT-6 Luna loop �
 
 **v0.6.0 — installable.** The full harness ships in [`plugin/`](plugin/): five role agents, the telemetry ledger, the scope-guard, `/onboard` + `/route` commands, and the audit/migrate/probe workflows — 72 tests, all green (`bash plugin/hooks/*.test.sh plugin/workflows/*.test.sh`). What remains on the [roadmap](docs/ROADMAP.md) is the generalization of the decision-layer harness, not the machinery.
 
+## How it routes — a full-stack repo, concretely
+
+The kit is a **Claude Code plugin**: five agents, each a role with its tier pinned in frontmatter. Claude Code's agent picker reads each agent's `description` and matches it to the task at hand — you (or your main session) describe the work, the right tier answers:
+
+| You ask for… | Answers | Tier | Enforced by |
+|---|---|---|---|
+| "fix the typo / change this button's label" | `text-and-copy-editor` | haiku | tools: no styling/logic; scope-guard |
+| "tighten the card spacing / fix the responsive layout" | `visual-polish` | sonnet·low | **scope-guard blocks it from data/stores/schemas/API — it must escalate** |
+| "add a settings page that persists preferences" | `implementer` | sonnet·high | — |
+| "rework the import pipeline / change the schema" | `architecture-auditor` first, then `implementer`/`complex-implementer` | opus·xhigh audit | auditor is read-only by design |
+| "this animation janks / this concurrent flow deadlocks" | `complex-implementer` | opus·high | — |
+
+The scope-guard is the piece that makes "UI agent" mean something in a full-stack repo: a UI-only agent touching a risky path (data adapters, persistence, stores, routes, schemas, API contracts) gets **blocked at the tool call** and told to escalate — the pattern list is per-project configurable via `.claude/scope-guard.conf`. `/onboard` writes your project's routing map once, tuned to your stack.
+
+Every dispatch lands in the project's `.claude/routing-log.jsonl` — the receipt that the cheap tier really took the cheap work.
+
 ## Install
 
 ```bash
