@@ -13,6 +13,6 @@
 
 ## Links
 
-- Feeds [[project-agent-routing-kit]] (the OPEN decision-layer item: answered NO-for-now, with the safety qualification).
-- Refines [[typesafe-jev-system-one-models]] / [[jev-model-router-riley-brown]]: the under-routing failure mode is real and threshold-fixable (0.7), the over-routing mode is the price of safety.
+- Feeds the kit decision-layer question (answered NO-for-now, with the safety qualification).
+- Refines the Jev prior-art notes: the under-routing failure mode is real and threshold-fixable (0.7); over-routing is the price of safety.
 - Method note for any future routing eval: ground truth must be dispatch-shaped (see learning 2).

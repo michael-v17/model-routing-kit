@@ -14,10 +14,6 @@
 {"id": "adv-07", "label": null, "arm": "haiku", "h": 0.05, "s": 0.45, "o": 0.92, "seconds": 1.267, "in_tokens": 556}
 {"id": "adv-08", "label": null, "arm": "jev", "h": 0.06, "s": 0.43, "o": 0.84, "seconds": 0.189, "in_tokens": 471}
 {"id": "adv-08", "label": null, "arm": "haiku", "h": 0.05, "s": 0.3, "o": 0.9, "seconds": 1.224, "in_tokens": 538}
-{"id": "adv-09", "label": null, "arm": "jev", "h": 0.55, "s": 0.67, "o": 0.46, "seconds": 0.231, "in_tokens": 457}
-{"id": "adv-09", "label": null, "arm": "haiku", "h": 0.05, "s": 0.85, "o": 0.2, "seconds": 1.343, "in_tokens": 524}
-{"id": "adv-10", "label": null, "arm": "jev", "h": 0.79, "s": 0.72, "o": 0.69, "seconds": 0.167, "in_tokens": 443}
-{"id": "adv-10", "label": null, "arm": "haiku", "h": 0.6, "s": 0.4, "o": 0.02, "seconds": 1.269, "in_tokens": 501}
 {"id": "adv-11", "label": null, "arm": "jev", "h": 0.32, "s": 0.56, "o": 0.61, "seconds": 0.14, "in_tokens": 450}
 {"id": "adv-11", "label": null, "arm": "haiku", "h": 0.85, "s": 0.6, "o": 0.1, "seconds": 1.241, "in_tokens": 508}
 {"id": "adv-12", "label": null, "arm": "jev", "h": 0.66, "s": 0.87, "o": 0.82, "seconds": 0.145, "in_tokens": 465}
@@ -28,3 +24,7 @@
 {"id": "adv-14", "label": null, "arm": "haiku", "h": 0.95, "s": 0.6, "o": 0.05, "seconds": 1.191, "in_tokens": 520}
 {"id": "adv-15", "label": null, "arm": "jev", "h": 0.04, "s": 0.26, "o": 0.83, "seconds": 0.146, "in_tokens": 480}
 {"id": "adv-15", "label": null, "arm": "haiku", "h": 0.03, "s": 0.22, "o": 0.95, "seconds": 1.305, "in_tokens": 548}
+{"id": "adv-09", "label": null, "arm": "jev", "h": 0.55, "s": 0.74, "o": 0.59, "seconds": 0.256, "in_tokens": 456}
+{"id": "adv-09", "label": null, "arm": "haiku", "h": 0.05, "s": 0.85, "o": 0.2, "seconds": 1.88, "in_tokens": 520}
+{"id": "adv-10", "label": null, "arm": "jev", "h": 0.73, "s": 0.66, "o": 0.66, "seconds": 0.166, "in_tokens": 439}
+{"id": "adv-10", "label": null, "arm": "haiku", "h": 0.9, "s": 0.3, "o": 0.05, "seconds": 1.138, "in_tokens": 495}
