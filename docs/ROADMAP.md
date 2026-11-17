@@ -19,6 +19,15 @@
 1. **Decision-layer harness generalization** (`decision/`) — the `evidence/` replay runner as a
    first-class command: any candidate decider runs the three-question protocol against the same
    cases before anything gets wired. The first verdict ("safe, not saving") is in the main README.
+   **The two live Jev paths this enables:**
+   - *Runtime decider* — a pre-dispatch hook asking "does the assigned tier suffice?" and escalating
+     when not. Requires a rerun of the evaluation against dispatch-shaped ground truth (which the
+     now-public ledger accumulates on its own, in every installing project) passing the same
+     pre-registered criteria.
+   - *Offline ledger auditor* — no runtime trust needed: Jev periodically reads `routing-log.jsonl`
+     receipts and flags oversized dispatches ("opus was sent to do a grep"). A wrong call costs a
+     false warning, nothing more — the cheapest way to put a typed-decision model to work in this
+     ecosystem today.
 2. **Community hardening** — the kit was born in one production setup; issue templates, an
    example project, and CI running the 72-test suite on push.
 
