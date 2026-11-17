@@ -6,9 +6,16 @@
 
 [![Claude Code](https://img.shields.io/badge/for-Claude%20Code-7c3aed?style=flat-square&logo=anthropic&logoColor=white)](https://claude.com/claude-code)
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue?style=flat-square)](LICENSE)
-[![Status](https://img.shields.io/badge/status-evidence%20complete%2C%20harness%20extracting-orange?style=flat-square)](docs/ROADMAP.md)
+[![Status](https://img.shields.io/badge/status-v0.6.0%20installable-brightgreen?style=flat-square)](docs/ROADMAP.md)
+
+[Install](#install) · [Evaluation](#the-headline-evaluation-can-a-0042mtok-typed-decision-model-pick-the-tier) · [How it routes](#how-it-routes--a-full-stack-repo-concretely) · [What you get](#what-you-get) · [Reproduce](#reproduce-the-evaluation) · [Roadmap](docs/ROADMAP.md)
 
 </div>
+
+```bash
+claude plugin marketplace add michael-v17/model-routing-kit
+claude plugin install model-routing-kit@model-routing-kit
+```
 
 ---
 
@@ -31,7 +38,9 @@ We asked [Jev](https://typesafe.ai) (TypeSafe's typed-decision model) three cali
 | 0 under-routing on 43 real top-tier dispatches | **pass @ thr 0.7** (0/43) | only @ thr 0.9 |
 | decision cost < $0.001 · p95 < 1 s | **$0.00003–5 · 0.22 s** | $~0.0001 · 1.44 s (fails) |
 | ≥85% agreement, stratified SWE-bench (72) | 48–52% — **fail** | 38–43% — fail |
-| beat `always-sonnet` on cost-quality | no (86% @ $12.7 vs 83% @ $10) | no |
+| beat `always-sonnet` on cost-quality | no (86% solved at cost index 12.7 vs 83% at 10.0) | no |
+
+Cost index: list price per 1M output tokens for Haiku 5.5 (0.5), Sonnet 5.5 (10) and Opus 5.5 (20), from Anthropic's pricing page in October 2026, with equal tokens per task assumed. It compares tiers; it is not dollars spent. The ladder is set in [`evidence/score.py`](evidence/score.py).
 
 Three findings worth stealing even if you never use this kit:
 
@@ -49,7 +58,13 @@ Also measured, smaller: a four-arm router smoke (Haiku loop · GPT-6 Luna loop �
 
 ## Status & roadmap
 
-**v0.6.0 — installable.** The full harness ships in [`plugin/`](plugin/): five role agents, the telemetry ledger, the scope-guard, `/onboard` + `/route` commands, and the audit/migrate/probe workflows — 72 tests, all green (`bash plugin/hooks/*.test.sh plugin/workflows/*.test.sh`). What remains on the [roadmap](docs/ROADMAP.md) is the generalization of the decision-layer harness, not the machinery.
+**v0.6.0 — installable.** The full harness ships at the repo root: five role agents in [`agents/`](agents/), the telemetry ledger and the scope-guard in [`hooks/`](hooks/), the `/onboard` + `/route` commands in [`commands/`](commands/), and the audit/migrate/probe workflows in [`workflows/`](workflows/). 72 tests, all green:
+
+```bash
+for t in hooks/*.test.sh workflows/*.test.sh; do bash "$t"; done
+```
+
+What remains on the [roadmap](docs/ROADMAP.md) is the generalization of the decision-layer harness, not the machinery.
 
 ## How it routes — a full-stack repo, concretely
 
@@ -90,11 +105,11 @@ The last line shows the dispatch: agent, requested model (`haiku`), resolved mod
 
 | Piece | File | What it does |
 |---|---|---|
-| Role ladder | `plugin/agents/` (5) | text-and-copy-editor (haiku) · implementer, visual-polish (sonnet) · architecture-auditor, complex-implementer (opus) — tier pinned in frontmatter |
-| Ledger | `plugin/hooks/agent-telemetry.sh` | every dispatch logged: requested vs resolved model, tokens, duration |
-| Scope guard | `plugin/hooks/scope-guard.sh` | a UI agent can never edit data adapters/stores/schemas — 18/18 tests |
-| Onboarding | `plugin/commands/onboard.md`, `route.md` | per-project routing map + a routing cheat-sheet |
-| Workflows | `plugin/workflows/` | routed audit (parallel finders + adversarial verify), mechanical migrate, and the probe |
+| Role ladder | [`agents/`](agents/) (5) | text-and-copy-editor (haiku) · implementer, visual-polish (sonnet) · architecture-auditor, complex-implementer (opus) — tier pinned in frontmatter |
+| Ledger | [`hooks/agent-telemetry.sh`](hooks/agent-telemetry.sh) | every dispatch logged: requested vs resolved model, tokens, duration |
+| Scope guard | [`hooks/scope-guard.sh`](hooks/scope-guard.sh) | a UI agent can never edit data adapters/stores/schemas — 18/18 tests |
+| Onboarding | [`commands/onboard.md`](commands/onboard.md), [`route.md`](commands/route.md) | per-project routing map + a routing cheat-sheet |
+| Workflows | [`workflows/`](workflows/) | routed audit (parallel finders + adversarial verify), mechanical migrate, and the probe |
 
 ## Reproduce the evaluation
 

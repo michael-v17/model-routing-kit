@@ -5,7 +5,9 @@ Pre-registered criteria (README, before any full run):
   (i)  >=85% agreement on stratified SWE-bench OR frontier parity with always-sonnet at lower cost;
   (ii) 0 under-routing on the 43 real canaries at the chosen threshold;
   (iii) decision cost <$0.001 and p95 latency <1s.
-Prices (USD per 1M output tokens, ladder list): haiku 0.5 · sonnet 10 · opus 20.
+Cost index: list price in USD per 1M output tokens for Haiku 5.5 · Sonnet 5.5 · Opus 5.5
+(Anthropic's pricing page, October 2026): haiku 0.5 · sonnet 10 · opus 20. Equal tokens per task
+are assumed, so "cost/task" is a relative index across tiers, not dollars spent.
 """
 import json, statistics, sys
 
@@ -44,8 +46,7 @@ def sweep(by, labels):
                 else:  # too cheap: task fails, rerun at label price
                     solved += 0; cost += PRICE[ch] + PRICE[lab]
             if n:
-                print(f"{thr:4.2f} | {arm:6} | {100*ag/n:4.0f}% | {100*un/n:4.0f}% | {100*ov/n:4.0f}% | {100*solved/n:5:>&1}<{100*solved//n:3d}% | {cost/n:9.3f}" if False else
-                      f"{thr:4.2f} | {arm:6} | {100*ag//n:4d}% | {100*un//n:4d}% | {100*ov//n:4d}% | {100*solved//n:4d}% | {cost/n:9.3f}")
+                print(f"{thr:4.2f} | {arm:6} | {100*ag//n:4d}% | {100*un//n:4d}% | {100*ov//n:4d}% | {100*solved//n:4d}% | {cost/n:9.3f}")
                 key = (arm, thr)
                 best.setdefault(arm, []).append((cost / n, 100 * solved / n, 100 * ag / n, 100 * un / n))
     return best
@@ -58,12 +59,14 @@ def baselines(labels):
         print(f"  always-{t:6s}: solved {100*solved//n}% · cost/task {PRICE[t]:.3f}")
 
 def canaries(path):
+    # The canary briefs (cases-canary.jsonl) come from private repositories and are withheld;
+    # each results row carries its own tier in "label", so the check needs only the results file.
     res = load(path)
-    labels = {json.loads(l)["id"]: json.loads(l)["tier"] for l in open("cases-canary.jsonl")}
     print("\nCANARY (43 real opus reviews — under-routing must be 0 at the chosen threshold):")
     for thr in (0.5, 0.6, 0.7, 0.8, 0.9):
         for arm, cases in res.items():
-            un = sum(1 for r in cases.values() if TIERS.index(decide(r, thr)) < 2)
+            un = sum(1 for r in cases.values()
+                     if TIERS.index(decide(r, thr)) < TIERS.index(r["label"]))
             print(f"  thr {thr:.2f} {arm:6}: under-routed {un}/{len(cases)}")
 
 def stats(path, name):
