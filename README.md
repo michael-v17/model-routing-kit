@@ -36,7 +36,7 @@ We asked [Jev](https://typesafe.ai) (TypeSafe's typed-decision model) three cali
 | Criterion (pre-registered) | Jev | Haiku 5.5 loop |
 |---|---|---|
 | 0 under-routing on 43 real top-tier dispatches | **pass @ thr 0.7** (0/43) | only @ thr 0.9 |
-| decision cost < $0.001 · p95 < 1 s | **$0.00003–5 · 0.22 s** | $~0.0001 · 1.44 s (fails) |
+| decision cost < $0.001 · p95 < 1 s | **$0.00003–$0.00005 · 0.22 s** | ~$0.0001 · 1.44 s (fails) |
 | ≥85% agreement, stratified SWE-bench (72) | 48–52% — **fail** | 38–43% — fail |
 | beat `always-sonnet` on cost-quality | no (86% solved at cost index 12.7 vs 83% at 10.0) | no |
 
